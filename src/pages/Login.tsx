@@ -91,15 +91,27 @@ export default function Login() {
   const handleGoogleLogin = async () => {
     setLoading(true);
     const provider = new GoogleAuthProvider();
+    // Force account selection to help with switching accounts
+    provider.setCustomParameters({ prompt: 'select_account' });
+    
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       await createUserProfile(user, user.displayName || 'Unnamed Student');
+      toast.success("গুগল লগইন সফল হয়েছে!");
       navigate('/dashboard');
     } catch (error: any) {
-      handleAuthError(error);
+      console.error("Google Auth error details:", error);
+      if (error.code === 'auth/popup-blocked') {
+        toast.error("আপনার ব্রাউজার পপ-আপ ব্লক করেছে। দয়া করে পপ-আপ এলাউ করুন অথবা নতুন ট্যাবে অ্যাপটি ওপেন করুন।");
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        // Ignore this, user just closed the popup
+      } else {
+        handleAuthError(error);
+      }
     } finally {
-      setLoading(false);
+      setLoading(true); // Keep loading state for a moment to prevent double clicks
+      setTimeout(() => setLoading(false), 1000);
     }
   };
 
@@ -326,6 +338,10 @@ export default function Login() {
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
             গুগল দিয়ে লগইন করুন
           </Button>
+
+          <p className="text-[10px] text-center text-gray-400 mt-2">
+            * গুগল লগইন কাজ না করলে অ্যাপটি নতুন ট্যাবে ওপেন করে চেষ্টা করুন।
+          </p>
 
           <div className="text-center text-sm">
             <button 
