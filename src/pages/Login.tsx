@@ -148,9 +148,9 @@ export default function Login() {
   const createUserProfile = async (user: any, displayName: string) => {
     const docRef = doc(db, 'users', user.uid);
     const docSnap = await getDoc(docRef);
-
+  
     if (!docSnap.exists()) {
-      const isAdmin = user.email === "mmeghalayajahan@gmail.com";
+      const isAdmin = user.email?.toLowerCase() === "mmeghalayajahan@gmail.com".toLowerCase();
       await setDoc(docRef, {
         uid: user.uid,
         name: displayName,

@@ -160,7 +160,7 @@ export default function App() {
   }, [user]);
 
   const loading = loadingAuth || loadingProfile;
-  const isAdmin = profile?.role === 'admin' || user?.email === "mmeghalayajahan@gmail.com";
+  const isAdmin = profile?.role === 'admin' || user?.email?.toLowerCase() === "mmeghalayajahan@gmail.com".toLowerCase();
 
   return (
     <AuthContext.Provider value={{ user, profile, loading, siteSettings }}>

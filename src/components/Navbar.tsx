@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'motion/react';
 export default function Navbar() {
   const { user, profile, siteSettings } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const isAdmin = profile?.role === 'admin' || user?.email === "mmeghalayajahan@gmail.com";
+  const isAdmin = profile?.role === 'admin' || user?.email?.toLowerCase() === "mmeghalayajahan@gmail.com".toLowerCase();
 
   const handleLogout = () => auth.signOut();
 
