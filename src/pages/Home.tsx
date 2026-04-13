@@ -90,6 +90,75 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Featured Course Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-[#fdfcf8] rounded-3xl border-2 border-[#c5a059]/20 overflow-hidden shadow-xl">
+            <div className="grid grid-cols-1 lg:grid-cols-2">
+              <div className="p-8 md:p-12">
+                <div className="inline-block px-4 py-1 bg-[#c5a059]/10 text-[#c5a059] rounded-full text-sm font-bold mb-6">
+                  নতুন ব্যাচ - ভর্তি চলছে
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold text-[#1a3a3a] mb-6">কুরআন শিক্ষা কোর্স [শুধুমাত্র মেয়েদের জন্য]</h2>
+                <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+                  জিরো থেকে তাজবীদসহ বিশুদ্ধ উচ্চারণে কায়দা, কুরআন তেলাওয়াত, নামাজের প্রয়োজনীয় সকল নিয়ম-কানুন ও মাসনূন দুআ শিখুন।
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  <div className="space-y-3">
+                    <h4 className="font-bold text-[#2d5a27] flex items-center gap-2">
+                      <Star className="w-4 h-4 fill-current" /> কোর্সে কী শিখবেন?
+                    </h4>
+                    <ul className="text-sm text-gray-600 space-y-2">
+                      <li>• জিরো থেকে বিশুদ্ধ উচ্চারণে কুরআন তেলায়াত</li>
+                      <li>• কায়দা, তাজবীদ ও সিফাতসহ বিশুদ্ধ উচ্চারণ</li>
+                      <li>• নামাজের প্রয়োজনীয় মাসায়েল</li>
+                      <li>• কুরআনের ১০টি সূরা মাশ্ক ও মুখস্ত</li>
+                      <li>• পুরো ৩০ পারা কোরআন হিফজ</li>
+                    </ul>
+                  </div>
+                  <div className="space-y-3">
+                    <h4 className="font-bold text-[#2d5a27] flex items-center gap-2">
+                      <PlayCircle className="w-4 h-4" /> সময়সূচি
+                    </h4>
+                    <ul className="text-sm text-gray-600 space-y-2">
+                      <li>• জিরো থেকে কুরআন শিক্ষা: শনি, সোম ও বুধবার</li>
+                      <li>• নাযেরা: রবি, মঙ্গল ও বৃহস্পতিবার</li>
+                      <li>• ক্লাসের মাধ্যম: অনলাইন (Google Meet)</li>
+                      <li>• সর্বমোট ক্লাস: ৩০+</li>
+                      <li>• সময়কাল: প্রায় ২ থেকে ২.৫ মাস</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="border-t border-[#c5a059]/10 pt-8">
+                  <h4 className="font-bold text-[#1a3a3a] mb-4">ক্লাস নিবেন:</h4>
+                  <div className="flex flex-wrap gap-4">
+                    <span className="px-4 py-2 bg-white border border-[#c5a059]/20 rounded-lg text-sm font-medium">মুয়াল্লিমা রাহিমা আক্তার</span>
+                    <span className="px-4 py-2 bg-white border border-[#c5a059]/20 rounded-lg text-sm font-medium">মুয়াল্লিমা ফাবিয়া মল্লিক</span>
+                    <span className="px-4 py-2 bg-white border border-[#c5a059]/20 rounded-lg text-sm font-medium">হাফেজা রাশেদা</span>
+                  </div>
+                </div>
+              </div>
+              <div className="relative h-64 lg:h-auto bg-[#1a3a3a] flex items-center justify-center overflow-hidden">
+                <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/islamic-art.png')]"></div>
+                <div className="relative z-10 text-center p-8">
+                  <div className="w-24 h-24 bg-[#c5a059] rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                    <Book className="w-12 h-12 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-4">ভর্তি হতে আজই যোগাযোগ করুন</h3>
+                  <Link to="/login">
+                    <Button size="lg" className="bg-[#c5a059] hover:bg-[#b08d4a] text-white px-8 rounded-full">
+                      এখনই ভর্তি হোন
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Categories Section */}
       <section id="courses-section" className="py-20 bg-[#fdfcf8] scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

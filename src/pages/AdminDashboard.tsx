@@ -19,8 +19,18 @@ interface Course {
   modules: any[];
 }
 
+interface Student {
+  uid: string;
+  name: string;
+  email: string;
+  phoneNumber: string;
+  role: string;
+  createdAt: any;
+}
+
 export default function AdminDashboard() {
   const [courses, setCourses] = useState<Course[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   
   // New Course Form
@@ -52,14 +62,25 @@ export default function AdminDashboard() {
     fetchSettings();
 
     const q = query(collection(db, 'courses'), orderBy('createdAt', 'desc'));
-    const unsub = onSnapshot(q, (snapshot) => {
+    const unsubCourses = onSnapshot(q, (snapshot) => {
       setCourses(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course)));
       setLoading(false);
     }, (error) => {
       console.error("Admin courses listener error:", error);
       setLoading(false);
     });
-    return () => unsub();
+
+    const studentsQ = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
+    const unsubStudents = onSnapshot(studentsQ, (snapshot) => {
+      setStudents(snapshot.docs.map(doc => doc.data() as Student));
+    }, (error) => {
+      console.error("Admin students listener error:", error);
+    });
+
+    return () => {
+      unsubCourses();
+      unsubStudents();
+    };
   }, []);
 
   const handleAddCourse = async (e: React.FormEvent) => {
@@ -89,9 +110,13 @@ export default function AdminDashboard() {
       toast.success("কোর্সটি সফলভাবে যোগ করা হয়েছে!");
       setNewCourse({ title: '', category: 'Quran learning', description: '', thumbnail: '' });
       setImageFile(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding course:", error);
-      toast.error("কোর্স যোগ করতে সমস্যা হয়েছে।");
+      if (error.code === 'storage/unauthorized') {
+        toast.error("ছবি আপলোড করার অনুমতি নেই। দয়া করে লগইন চেক করুন।");
+      } else {
+        toast.error("কোর্স যোগ করতে সমস্যা হয়েছে: " + (error.message || ""));
+      }
     } finally {
       setUploading(false);
     }
@@ -118,9 +143,13 @@ export default function AdminDashboard() {
       setSiteSettings(prev => ({ ...prev, logoUrl }));
       toast.success("সাইট সেটিংস সফলভাবে আপডেট করা হয়েছে!");
       setLogoFile(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating settings:", error);
-      toast.error("সেটিংস আপডেট করতে সমস্যা হয়েছে।");
+      if (error.code === 'storage/unauthorized') {
+        toast.error("লোগো আপলোড করার অনুমতি নেই।");
+      } else {
+        toast.error("সেটিংস আপডেট করতে সমস্যা হয়েছে: " + (error.message || ""));
+      }
     } finally {
       setUpdatingSettings(false);
     }
@@ -274,9 +303,48 @@ export default function AdminDashboard() {
 
         <TabsContent value="students">
           <Card className="border-[#c5a059]/20">
-            <CardContent className="p-12 text-center text-gray-500">
-              <Users className="w-12 h-12 mx-auto mb-4 opacity-20" />
-              <p>শিক্ষার্থী তালিকা লোড হচ্ছে...</p>
+            <CardHeader>
+              <CardTitle>শিক্ষার্থী তালিকা ({students.length})</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-gray-50 text-gray-700 uppercase text-xs">
+                    <tr>
+                      <th className="px-4 py-3">নাম</th>
+                      <th className="px-4 py-3">ইমেইল</th>
+                      <th className="px-4 py-3">ফোন</th>
+                      <th className="px-4 py-3">রোল</th>
+                      <th className="px-4 py-3">তারিখ</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {students.map((student) => (
+                      <tr key={student.uid} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3 font-medium text-[#1a3a3a]">{student.name}</td>
+                        <td className="px-4 py-3 text-gray-600">{student.email}</td>
+                        <td className="px-4 py-3 text-gray-600">{student.phoneNumber || 'N/A'}</td>
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${student.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'}`}>
+                            {student.role === 'admin' ? 'এডমিন' : 'শিক্ষার্থী'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-gray-500">
+                          {student.createdAt?.toDate() ? new Date(student.createdAt.toDate()).toLocaleDateString('bn-BD') : 'N/A'}
+                        </td>
+                      </tr>
+                    ))}
+                    {students.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-12 text-center text-gray-500">
+                          <Users className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                          <p>কোন শিক্ষার্থী পাওয়া যায়নি।</p>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

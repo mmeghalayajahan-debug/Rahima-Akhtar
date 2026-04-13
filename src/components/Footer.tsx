@@ -64,6 +64,10 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-white/10 pt-8 text-center text-gray-400 text-sm">
+          <div className="mb-4">
+            <h4 className="text-sm font-semibold mb-2 text-[#c5a059]">আমাদের শিক্ষিকা মণ্ডলী:</h4>
+            <p className="text-xs text-gray-400">মুয়াল্লিমা রাহিমা আক্তার, মুয়াল্লিমা ফাবিয়া মল্লিক, হাফেজা রাশেদা</p>
+          </div>
           <p>© {new Date().getFullYear()} {siteSettings.siteName}। সর্বস্বত্ব সংরক্ষিত।</p>
         </div>
       </div>

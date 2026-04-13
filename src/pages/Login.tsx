@@ -98,8 +98,12 @@ export default function Login() {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       await createUserProfile(user, user.displayName || 'Unnamed Student');
-      toast.success("গুগল লগইন সফল হয়েছে!");
-      navigate('/dashboard');
+      toast.success("লগইন সফল হয়েছে! ড্যাশবোর্ডে নিয়ে যাওয়া হচ্ছে...");
+      
+      // Small delay to ensure toast is seen and profile is created
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1000);
     } catch (error: any) {
       console.error("Google Auth error details:", error);
       if (error.code === 'auth/popup-blocked') {
