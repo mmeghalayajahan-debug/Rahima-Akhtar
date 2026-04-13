@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db, storage } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, doc, setDoc, getDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -50,6 +50,7 @@ export default function AdminDashboard() {
   });
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [updatingSettings, setUpdatingSettings] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   useEffect(() => {
     // Fetch site settings
@@ -70,9 +71,16 @@ export default function AdminDashboard() {
       setLoading(false);
     });
 
-    const studentsQ = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
+    const studentsQ = query(collection(db, 'users'));
     const unsubStudents = onSnapshot(studentsQ, (snapshot) => {
-      setStudents(snapshot.docs.map(doc => doc.data() as Student));
+      const studentData = snapshot.docs.map(doc => doc.data() as Student);
+      // Sort in memory to handle missing createdAt safely
+      studentData.sort((a, b) => {
+        const dateA = a.createdAt?.seconds ? a.createdAt.seconds : 0;
+        const dateB = b.createdAt?.seconds ? b.createdAt.seconds : 0;
+        return dateB - dateA;
+      });
+      setStudents(studentData);
     }, (error) => {
       console.error("Admin students listener error:", error);
     });
@@ -91,8 +99,30 @@ export default function AdminDashboard() {
 
       if (imageFile) {
         const storageRef = ref(storage, `course-thumbnails/${Date.now()}_${imageFile.name}`);
-        const snapshot = await uploadBytes(storageRef, imageFile);
-        thumbnailUrl = await getDownloadURL(snapshot.ref);
+        const uploadTask = uploadBytesResumable(storageRef, imageFile);
+        
+        thumbnailUrl = await new Promise((resolve, reject) => {
+          const timeoutId = setTimeout(() => {
+            uploadTask.cancel();
+            reject(new Error("আপলোড সময় শেষ হয়ে গেছে (১ মিনিট)। দয়া করে ছোট সাইজের ছবি ব্যবহার করুন অথবা আবার চেষ্টা করুন।"));
+          }, 60000);
+
+          uploadTask.on('state_changed', 
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              setUploadProgress(Math.round(progress));
+            }, 
+            (error) => {
+              clearTimeout(timeoutId);
+              reject(error);
+            }, 
+            async () => {
+              clearTimeout(timeoutId);
+              const url = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve(url);
+            }
+          );
+        });
       }
 
       if (!thumbnailUrl) {
@@ -130,8 +160,30 @@ export default function AdminDashboard() {
 
       if (logoFile) {
         const storageRef = ref(storage, `site/logo_${Date.now()}`);
-        const snapshot = await uploadBytes(storageRef, logoFile);
-        logoUrl = await getDownloadURL(snapshot.ref);
+        const uploadTask = uploadBytesResumable(storageRef, logoFile);
+        
+        logoUrl = await new Promise((resolve, reject) => {
+          const timeoutId = setTimeout(() => {
+            uploadTask.cancel();
+            reject(new Error("আপলোড সময় শেষ হয়ে গেছে (১ মিনিট)। দয়া করে ছোট সাইজের ছবি ব্যবহার করুন।"));
+          }, 60000);
+
+          uploadTask.on('state_changed', 
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              setUploadProgress(Math.round(progress));
+            }, 
+            (error) => {
+              clearTimeout(timeoutId);
+              reject(error);
+            }, 
+            async () => {
+              clearTimeout(timeoutId);
+              const url = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve(url);
+            }
+          );
+        });
       }
 
       await setDoc(doc(db, 'settings', 'site'), {
@@ -294,7 +346,7 @@ export default function AdminDashboard() {
                 </div>
                 <Button type="submit" disabled={uploading} className="w-full bg-[#2d5a27] hover:bg-[#1a3a3a]">
                   <Plus className="w-4 h-4 mr-2" />
-                  {uploading ? 'ছবি আপলোড হচ্ছে...' : 'কোর্স তৈরি করুন'}
+                  {uploading ? `আপলোড হচ্ছে (${uploadProgress}%)...` : 'কোর্স তৈরি করুন'}
                 </Button>
               </form>
             </CardContent>
@@ -389,7 +441,7 @@ export default function AdminDashboard() {
 
                 <Button type="submit" disabled={updatingSettings} className="w-full bg-[#2d5a27] hover:bg-[#1a3a3a]">
                   <Upload className="w-4 h-4 mr-2" />
-                  {updatingSettings ? 'আপডেট হচ্ছে...' : 'সেটিংস সেভ করুন'}
+                  {updatingSettings ? `আপডেট হচ্ছে (${uploadProgress}%)...` : 'সেটিংস সেভ করুন'}
                 </Button>
               </form>
             </CardContent>
