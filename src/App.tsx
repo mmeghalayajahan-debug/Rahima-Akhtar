@@ -6,7 +6,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth, db } from './lib/firebase';
+import { auth, db, handleFirestoreError, OperationType } from './lib/firebase';
 import { doc, getDoc, getDocFromServer } from 'firebase/firestore';
 import { useState, useEffect, createContext, useContext } from 'react';
 
@@ -38,57 +38,6 @@ interface AuthContextType {
   };
 }
 
-enum OperationType {
-  CREATE = 'create',
-  UPDATE = 'update',
-  DELETE = 'delete',
-  LIST = 'list',
-  GET = 'get',
-  WRITE = 'write',
-}
-
-interface FirestoreErrorInfo {
-  error: string;
-  operationType: OperationType;
-  path: string | null;
-  authInfo: {
-    userId: string | undefined;
-    email: string | null | undefined;
-    emailVerified: boolean | undefined;
-    isAnonymous: boolean | undefined;
-    tenantId: string | null | undefined;
-    providerInfo: {
-      providerId: string;
-      displayName: string | null;
-      email: string | null;
-      photoUrl: string | null;
-    }[];
-  }
-}
-
-function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
-  const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
-    authInfo: {
-      userId: auth.currentUser?.uid,
-      email: auth.currentUser?.email,
-      emailVerified: auth.currentUser?.emailVerified,
-      isAnonymous: auth.currentUser?.isAnonymous,
-      tenantId: auth.currentUser?.tenantId,
-      providerInfo: auth.currentUser?.providerData.map(provider => ({
-        providerId: provider.providerId,
-        displayName: provider.displayName,
-        email: provider.email,
-        photoUrl: provider.photoURL
-      })) || []
-    },
-    operationType,
-    path
-  }
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
-}
-
 const AuthContext = createContext<AuthContextType>({ 
   user: null, 
   profile: null, 
@@ -112,13 +61,14 @@ export default function App() {
 
   useEffect(() => {
     async function fetchSettings() {
+      const path = 'settings/site';
       try {
         const settingsDoc = await getDoc(doc(db, 'settings', 'site'));
         if (settingsDoc.exists()) {
           setSiteSettings(settingsDoc.data() as any);
         }
       } catch (error) {
-        console.error("Error fetching site settings:", error);
+        handleFirestoreError(error, OperationType.GET, path);
       }
     }
     fetchSettings();
@@ -126,11 +76,12 @@ export default function App() {
 
   useEffect(() => {
     async function testConnection() {
+      const path = 'test/connection';
       try {
         await getDocFromServer(doc(db, 'test', 'connection'));
         console.log("Firestore connection successful");
       } catch (error: any) {
-        console.error("Firestore connection test failed:", error.message);
+        handleFirestoreError(error, OperationType.GET, path);
       }
     }
     testConnection();

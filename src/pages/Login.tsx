@@ -1,4 +1,4 @@
-import { auth, db } from '../lib/firebase';
+import { auth, db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { 
   GoogleAuthProvider, 
   signInWithPopup, 
@@ -150,19 +150,24 @@ export default function Login() {
   };
 
   const createUserProfile = async (user: any, displayName: string) => {
-    const docRef = doc(db, 'users', user.uid);
-    const docSnap = await getDoc(docRef);
-  
-    if (!docSnap.exists()) {
-      const isAdmin = user.email?.toLowerCase() === "mmeghalayajahan@gmail.com".toLowerCase();
-      await setDoc(docRef, {
-        uid: user.uid,
-        name: displayName,
-        email: user.email || '',
-        phoneNumber: user.phoneNumber || '',
-        role: isAdmin ? 'admin' : 'student',
-        createdAt: serverTimestamp(),
-      });
+    const path = `users/${user.uid}`;
+    try {
+      const docRef = doc(db, 'users', user.uid);
+      const docSnap = await getDoc(docRef);
+    
+      if (!docSnap.exists()) {
+        const isAdmin = user.email?.toLowerCase() === "mmeghalayajahan@gmail.com".toLowerCase();
+        await setDoc(docRef, {
+          uid: user.uid,
+          name: displayName,
+          email: user.email || '',
+          phoneNumber: user.phoneNumber || '',
+          role: isAdmin ? 'admin' : 'student',
+          createdAt: serverTimestamp(),
+        });
+      }
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, path);
     }
   };
 

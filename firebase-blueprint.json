@@ -81,6 +81,17 @@
     "/reviews/{reviewId}": {
       "schema": "Review",
       "description": "Public reviews"
+    },
+    "/settings/site": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "siteName": { "type": "string" },
+          "logoUrl": { "type": "string", "format": "uri" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "description": "Global site settings"
     }
   }
 }

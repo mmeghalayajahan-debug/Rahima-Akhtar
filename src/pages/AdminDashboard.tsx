@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db, storage } from '../lib/firebase';
+import { db, storage, handleFirestoreError, OperationType } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, doc, setDoc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
@@ -55,9 +55,14 @@ export default function AdminDashboard() {
   useEffect(() => {
     // Fetch site settings
     const fetchSettings = async () => {
-      const settingsDoc = await getDoc(doc(db, 'settings', 'site'));
-      if (settingsDoc.exists()) {
-        setSiteSettings(settingsDoc.data() as any);
+      const path = 'settings/site';
+      try {
+        const settingsDoc = await getDoc(doc(db, 'settings', 'site'));
+        if (settingsDoc.exists()) {
+          setSiteSettings(settingsDoc.data() as any);
+        }
+      } catch (error) {
+        handleFirestoreError(error, OperationType.GET, path);
       }
     };
     fetchSettings();
@@ -67,7 +72,7 @@ export default function AdminDashboard() {
       setCourses(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course)));
       setLoading(false);
     }, (error) => {
-      console.error("Admin courses listener error:", error);
+      handleFirestoreError(error, OperationType.LIST, 'courses');
       setLoading(false);
     });
 
@@ -82,7 +87,7 @@ export default function AdminDashboard() {
       });
       setStudents(studentData);
     }, (error) => {
-      console.error("Admin students listener error:", error);
+      handleFirestoreError(error, OperationType.LIST, 'users');
     });
 
     return () => {
@@ -141,12 +146,7 @@ export default function AdminDashboard() {
       setNewCourse({ title: '', category: 'Quran learning', description: '', thumbnail: '' });
       setImageFile(null);
     } catch (error: any) {
-      console.error("Error adding course:", error);
-      if (error.code === 'storage/unauthorized') {
-        toast.error("ছবি আপলোড করার অনুমতি নেই। দয়া করে লগইন চেক করুন।");
-      } else {
-        toast.error("কোর্স যোগ করতে সমস্যা হয়েছে: " + (error.message || ""));
-      }
+      handleFirestoreError(error, OperationType.CREATE, 'courses');
     } finally {
       setUploading(false);
     }
@@ -196,12 +196,7 @@ export default function AdminDashboard() {
       toast.success("সাইট সেটিংস সফলভাবে আপডেট করা হয়েছে!");
       setLogoFile(null);
     } catch (error: any) {
-      console.error("Error updating settings:", error);
-      if (error.code === 'storage/unauthorized') {
-        toast.error("লোগো আপলোড করার অনুমতি নেই।");
-      } else {
-        toast.error("সেটিংস আপডেট করতে সমস্যা হয়েছে: " + (error.message || ""));
-      }
+      handleFirestoreError(error, OperationType.WRITE, 'settings/site');
     } finally {
       setUpdatingSettings(false);
     }

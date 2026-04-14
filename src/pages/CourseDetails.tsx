@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react';
 import { db, auth } from '../lib/firebase';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore';
 import { useAuth } from '../App';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Play, CheckCircle, Lock, ArrowLeft, ChevronRight } from 'lucide-react';
@@ -192,15 +193,28 @@ export default function CourseDetails() {
               <h4 className="font-bold mb-4 text-sm uppercase tracking-wider text-[#c5a059]">সহায়তা প্রয়োজন?</h4>
               <p className="text-xs text-gray-500 mb-4">কোর্স সংক্রান্ত কোনো প্রশ্ন থাকলে আমাদের হোয়াটসঅ্যাপে যোগাযোগ করুন।</p>
               <div className="space-y-3">
-                <Button variant="outline" asChild className="w-full border-[#25D366] text-[#25D366] hover:bg-[#25D366]/5">
-                  <a href="https://wa.me/8801721003234" target="_blank" rel="noreferrer">হোয়াটসঅ্যাপ চ্যাট</a>
-                </Button>
-                <Button variant="outline" asChild className="w-full border-[#1877F2] text-[#1877F2] hover:bg-[#1877F2]/5">
-                  <a href="https://www.facebook.com/profile.php?id=61569740871872" target="_blank" rel="noreferrer">ফেসবুক পেজ</a>
-                </Button>
-                <Button variant="outline" asChild className="w-full border-[#2d5a27] text-[#2d5a27] hover:bg-[#2d5a27]/5">
-                  <a href="tel:+8801721003234">সরাসরি কল করুন</a>
-                </Button>
+                <a 
+                  href="https://wa.me/8801721003234" 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className={cn(buttonVariants({ variant: "outline" }), "w-full border-[#25D366] text-[#25D366] hover:bg-[#25D366]/5")}
+                >
+                  হোয়াটসঅ্যাপ চ্যাট
+                </a>
+                <a 
+                  href="https://www.facebook.com/profile.php?id=61569740871872" 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className={cn(buttonVariants({ variant: "outline" }), "w-full border-[#1877F2] text-[#1877F2] hover:bg-[#1877F2]/5")}
+                >
+                  ফেসবুক পেজ
+                </a>
+                <a 
+                  href="tel:+8801721003234"
+                  className={cn(buttonVariants({ variant: "outline" }), "w-full border-[#2d5a27] text-[#2d5a27] hover:bg-[#2d5a27]/5")}
+                >
+                  সরাসরি কল করুন
+                </a>
               </div>
             </CardContent>
           </Card>
