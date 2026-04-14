@@ -103,6 +103,13 @@ export default function AdminDashboard() {
       let thumbnailUrl = newCourse.thumbnail;
 
       if (imageFile) {
+        if (imageFile.size > 5 * 1024 * 1024) {
+          toast.error("ফাইলের সাইজ ৫ মেগাবাইটের বেশি হওয়া যাবে না।");
+          setUploading(false);
+          return;
+        }
+        
+        toast.info("ছবি আপলোড শুরু হচ্ছে...");
         const storageRef = ref(storage, `course-thumbnails/${Date.now()}_${imageFile.name}`);
         const uploadTask = uploadBytesResumable(storageRef, imageFile);
         
@@ -116,10 +123,15 @@ export default function AdminDashboard() {
             (snapshot) => {
               const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
               setUploadProgress(Math.round(progress));
+              console.log(`Course thumbnail upload progress: ${progress}%`);
             }, 
             (error) => {
               clearTimeout(timeoutId);
-              reject(error);
+              console.error("Course thumbnail upload error details:", error);
+              let msg = "ছবি আপলোড ব্যর্থ হয়েছে।";
+              if (error.code === 'storage/unauthorized') msg = "আপনার ছবি আপলোড করার অনুমতি নেই।";
+              if (error.code === 'storage/canceled') msg = "আপলোড বাতিল করা হয়েছে।";
+              reject(new Error(`${msg} (${error.message})`));
             }, 
             async () => {
               clearTimeout(timeoutId);
@@ -159,6 +171,13 @@ export default function AdminDashboard() {
       let logoUrl = siteSettings.logoUrl;
 
       if (logoFile) {
+        if (logoFile.size > 2 * 1024 * 1024) {
+          toast.error("লোগোর সাইজ ২ মেগাবাইটের বেশি হওয়া যাবে না।");
+          setUpdatingSettings(false);
+          return;
+        }
+
+        toast.info("লোগো আপলোড শুরু হচ্ছে...");
         const storageRef = ref(storage, `site/logo_${Date.now()}`);
         const uploadTask = uploadBytesResumable(storageRef, logoFile);
         
@@ -172,10 +191,15 @@ export default function AdminDashboard() {
             (snapshot) => {
               const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
               setUploadProgress(Math.round(progress));
+              console.log(`Logo upload progress: ${progress}%`);
             }, 
             (error) => {
               clearTimeout(timeoutId);
-              reject(error);
+              console.error("Logo upload error details:", error);
+              let msg = "লোগো আপলোড ব্যর্থ হয়েছে।";
+              if (error.code === 'storage/unauthorized') msg = "লোগো আপলোড করার অনুমতি নেই।";
+              if (error.code === 'storage/canceled') msg = "লোগো আপলোড বাতিল করা হয়েছে।";
+              reject(new Error(`${msg} (${error.message})`));
             }, 
             async () => {
               clearTimeout(timeoutId);

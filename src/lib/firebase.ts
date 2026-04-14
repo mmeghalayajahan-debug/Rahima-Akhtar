@@ -8,6 +8,7 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const storage = getStorage(app);
+console.log("Firebase Storage initialized with bucket:", firebaseConfig.storageBucket);
 
 export enum OperationType {
   CREATE = 'create',
